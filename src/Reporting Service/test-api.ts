@@ -100,5 +100,4 @@ async function testAPI() {
   }
 }
 
-// Run the tests
 testAPI();
