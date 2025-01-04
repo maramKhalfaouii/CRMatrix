@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sales-service
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sales-service
+  template:
+    metadata:
+      labels:
+        app: sales-service
+    spec:
+      containers:
+      - name: sales-service
+        image: sales-service:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: DB_HOST
+          value: "sales-mysql"
+        - name: DB_NAME
+          value: "sales"
+        - name: DB_USER
+          value: "sales_user"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secrets
+              key: mysql-user-password
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"

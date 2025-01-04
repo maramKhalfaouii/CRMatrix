@@ -1,0 +1,23 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: sales-virtualservice
+  namespace: default
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - sales-gateway
+  http:
+  - match:
+    - uri:
+        prefix: /api/sales
+    route:
+    - destination:
+        host: sales-service
+        port:
+          number: 80
+    timeout: 30s
+    retries:
+      attempts: 3
+      perTryTimeout: 2s
