@@ -1,4 +1,4 @@
-fastapi==0.68.1
+fastapi==0.68.0
 uvicorn==0.15.0
 sqlalchemy==1.4.23
 psycopg2-binary==2.9.1
@@ -6,3 +6,5 @@ pydantic==1.8.2
 python-dotenv==0.19.0
 alembic==1.7.1
 email-validator
+dapr-ext-fastapi==1.0.0
+dapr==1.9.0
