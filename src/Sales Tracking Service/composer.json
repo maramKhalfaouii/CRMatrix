@@ -1,0 +1,15 @@
+{
+    "require": {
+        "promphp/prometheus_client_php": "^2.0",
+        "open-telemetry/opentelemetry": "^1.0",
+        "open-telemetry/exporter-zipkin": "^1.0",
+        "guzzlehttp/promises": "^2.0",
+        "php-http/httplug": "^2.4"
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": true,
+            "tbachert/spi": true
+        }
+    }
+}

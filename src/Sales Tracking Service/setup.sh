@@ -150,5 +150,7 @@ CREATE TABLE sales (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 EOF
+composer install
+composer update
 
 echo "Setup completed successfully"
