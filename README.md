@@ -1,6 +1,3 @@
-Here is a suggested README for your repository:
-
----
 
 # Distributed CRM Framework
 
