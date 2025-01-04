@@ -15,9 +15,9 @@ This repository contains two main branches, each showcasing a different integrat
 
 The project consists of three microservices, each with its own database and developed in different languages:
 
-- **Service 1**: Description of Service 1
-- **Service 2**: Description of Service 2
-- **Service 3**: Description of Service 3
+- **Service 1**: Customer management service
+- **Service 2**: Report management service
+- **Service 3**: sales Tracking service
 
 ## Getting Started
 
