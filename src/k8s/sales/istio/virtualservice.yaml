@@ -5,9 +5,11 @@ metadata:
   namespace: default
 spec:
   hosts:
-  - "*"
+  - "sales.example.com"
+  - "sales-service"
   gateways:
-  - sales-gateway
+  - crm-gateway
+  - mesh
   http:
   - match:
     - uri:

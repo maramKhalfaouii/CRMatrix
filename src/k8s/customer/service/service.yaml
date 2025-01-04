@@ -6,6 +6,9 @@ spec:
   selector:
     app: customer-service
   ports:
-  - port: 8000
-    targetPort: 8000
+    - name: http-web
+      port: 8000
+      targetPort: 8000
   type: ClusterIP
+
+  
