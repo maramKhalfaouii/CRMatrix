@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   reporting-service:
     build: .
@@ -6,12 +7,29 @@ services:
     environment:
       - MONGODB_URI=mongodb://mongodb:27017/crm-reporting
       - NODE_ENV=development
+      - DAPR_HTTP_PORT=3501
+      - DAPR_GRPC_PORT=50002
     depends_on:
       - mongodb
+      - redis
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
       - /usr/src/app/dist
+
+  reporting-service-dapr:
+    image: "daprio/daprd:edge"
+    command: [
+      "./daprd",
+      "-app-id", "reporting-service",
+      "-app-port", "3000",
+      "-components-path", "/components"
+    ]
+    volumes:
+      - "./components/:/components"
+    depends_on:
+      - reporting-service
+    network_mode: "service:reporting-service"
 
   mongodb:
     image: mongo:latest
@@ -19,6 +37,11 @@ services:
       - "27017:27017"
     volumes:
       - mongodb_data:/data/db
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
 
 volumes:
   mongodb_data:

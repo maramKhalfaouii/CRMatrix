@@ -1,58 +1,38 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\RequestContext;
-use Symfony\Component\Routing\Matcher\UrlMatcher;
-use Symfony\Component\Routing\RouteCollection;
-use Symfony\Component\Routing\Route;
-use App\Controller\SaleController;
-use App\Repository\SaleRepository;
+$connection = new PDO(
+    'mysql:host=' . getenv('DB_HOST') . ';dbname=' . getenv('DB_NAME'),
+    getenv('DB_USER'),
+    getenv('DB_PASSWORD')
+);
 
-$routes = new RouteCollection();
-$repository = new SaleRepository();
-$controller = new SaleController($repository);
+$repository = new App\Repository\SaleRepository($connection);
+$controller = new App\Controller\SaleController($repository);
 
-$routes->add('sales_index', new Route(
-    '/sales',
-    ['_controller' => [$controller, 'index']],
-    [],
-    [],
-    '',
-    [],
-    ['GET']
-));
+$method = $_SERVER['REQUEST_METHOD'];
+$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-$routes->add('sales_create', new Route(
-    '/sales',
-    ['_controller' => [$controller, 'create']],
-    [],
-    [],
-    '',
-    [],
-    ['POST']
-));
+header('Content-Type: application/json');
 
-$routes->add('sales_show', new Route(
-    '/sales/{id}',
-    ['_controller' => [$controller, 'show']],
-    ['id' => '\d+'],
-    [],
-    '',
-    [],
-    ['GET']
-));
-
-$context = new RequestContext();
-$request = Request::createFromGlobals();
-$context->fromRequest($request);
-
-$matcher = new UrlMatcher($routes, $context);
 try {
-    $parameters = $matcher->match($request->getPathInfo());
-    $response = call_user_func($parameters['_controller'], ...array_filter($parameters, fn($key) => $key !== '_controller', ARRAY_FILTER_USE_KEY));
-} catch (\Exception $e) {
-    $response = new JsonResponse(['error' => 'Not found'], 404);
+    switch ("$method $path") {
+        case 'GET /sales':
+            echo json_encode($controller->index());
+            break;
+        case (preg_match('#^GET /sales/(\d+)$#', "$method $path", $matches) ? true : false):
+            $sale = $controller->show((int)$matches[1]);
+            echo $sale ? json_encode($sale) : http_response_code(404);
+            break;
+        case 'POST /sales':
+            $data = json_decode(file_get_contents('php://input'), true);
+            $controller->create($data);
+            http_response_code(201);
+            break;
+        default:
+            http_response_code(404);
+    }
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['error' => $e->getMessage()]);
 }
-
-$response->send();

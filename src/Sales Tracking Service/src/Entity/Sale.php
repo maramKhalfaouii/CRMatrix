@@ -2,42 +2,18 @@
 namespace App\Entity;
 
 class Sale {
-    private $id;
-    private $customer_name;
-    private $amount;
+    private int $id;
+    private string $customerName;
+    private float $amount;
+    private string $status;
+    private \DateTime $createdAt;
 
-    public function getId(): ?int {
-        return $this->id;
-    }
-
-    public function setId(int $id): self {
-        $this->id = $id;
-        return $this;
-    }
-
-    public function getCustomerName(): string {
-        return $this->customer_name;
-    }
-
-    public function setCustomerName(string $name): self {
-        $this->customer_name = $name;
-        return $this;
-    }
-
-    public function getAmount(): float {
-        return $this->amount;
-    }
-
-    public function setAmount(float $amount): self {
-        $this->amount = $amount;
-        return $this;
-    }
-
-    public function toArray(): array {
-        return [
-            'id' => $this->id,
-            'customer_name' => $this->customer_name,
-            'amount' => $this->amount
-        ];
-    }
+    public function getId(): int { return $this->id; }
+    public function getCustomerName(): string { return $this->customerName; }
+    public function setCustomerName(string $name): void { $this->customerName = $name; }
+    public function getAmount(): float { return $this->amount; }
+    public function setAmount(float $amount): void { $this->amount = $amount; }
+    public function getStatus(): string { return $this->status; }
+    public function setStatus(string $status): void { $this->status = $status; }
+    public function getCreatedAt(): \DateTime { return $this->createdAt; }
 }
