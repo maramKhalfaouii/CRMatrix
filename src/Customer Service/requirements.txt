@@ -12,3 +12,5 @@ opentelemetry-sdk
 opentelemetry-instrumentation-fastapi
 opentelemetry-instrumentation-sqlalchemy
 opentelemetry-exporter-zipkin
+dapr-ext-fastapi>=1.0.0
+dapr>=1.0.0 

@@ -1,7 +1,7 @@
-from fastapi import FastAPI, Request
-from .api.endpoints import customers
-from .config import settings
-from .database import engine, Base
+from fastapi import FastAPI, Request, Response
+from app.api.endpoints import customers
+from app.config import settings
+from app.database import engine
 import logging
 import time
 from sqlalchemy import text
@@ -15,6 +15,8 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
+from dapr.ext.fastapi import DaprApp
+from dapr.clients import DaprClient
 
 # Prometheus metrics
 REQUEST_COUNT = Counter(
@@ -30,6 +32,16 @@ REQUEST_LATENCY = Histogram(
 DB_CONNECTION_FAILURES = Counter(
     'db_connection_failures_total',
     'Database connection failure count'
+)
+DAPR_OPERATIONS = Counter(
+    'dapr_operations_total',
+    'Dapr operations count',
+    ['operation_type', 'status']
+)
+DAPR_LATENCY = Histogram(
+    'dapr_operation_duration_seconds',
+    'Dapr operation latency',
+    ['operation_type']
 )
 
 # Initialize tracing
@@ -56,9 +68,21 @@ app = FastAPI(
     description="API for customer management system"
 )
 
+# Initialize Dapr
+dapr_app = DaprApp(app)
+
 # Initialize FastAPI instrumentation
 FastAPIInstrumentor.instrument_app(app)
 SQLAlchemyInstrumentor().instrument(engine=engine)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Add middleware for metrics
 @app.middleware("http")
@@ -85,6 +109,29 @@ async def metrics_middleware(request: Request, call_next):
 async def metrics():
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
+# Health check endpoint
+@app.get("/healthz")
+async def health_check():
+    return {"status": "healthy"}
+
+# Dapr subscription endpoints
+@dapr_app.subscribe(pubsub_name='pubsub', topic='customer-events')
+async def customer_events_handler(event_data: dict):
+    try:
+        logger.info(f"Received customer event: {event_data}")
+        DAPR_OPERATIONS.labels(
+            operation_type='pubsub_receive',
+            status='success'
+        ).inc()
+        return {"success": True}
+    except Exception as e:
+        logger.error(f"Error processing customer event: {str(e)}")
+        DAPR_OPERATIONS.labels(
+            operation_type='pubsub_receive',
+            status='error'
+        ).inc()
+        raise
+
 # Include routers
 app.include_router(
     customers.router,
@@ -109,15 +156,39 @@ def wait_for_db(max_retries=5, retry_interval=5):
             time.sleep(retry_interval)
     return False
 
+async def init_dapr():
+    """Initialize Dapr components and verify connectivity."""
+    try:
+        with DaprClient() as d:
+            # Ping state store
+            await d.save_state(
+                store_name="statestore",
+                key="health-check",
+                value="ok"
+            )
+            logger.info("Dapr state store connection successful")
+            DAPR_OPERATIONS.labels(
+                operation_type='init',
+                status='success'
+            ).inc()
+    except Exception as e:
+        logger.error(f"Dapr initialization failed: {str(e)}")
+        DAPR_OPERATIONS.labels(
+            operation_type='init',
+            status='error'
+        ).inc()
+        raise
+
 @app.on_event("startup")
 async def startup():
     """Startup event handler."""
     try:
         wait_for_db()
         Base.metadata.create_all(bind=engine)
-        logger.info("Database tables created successfully")
+        await init_dapr()
+        logger.info("Application startup completed successfully")
     except Exception as e:
-        logger.error(f"Startup failed - Database error: {str(e)}")
+        logger.error(f"Startup failed: {str(e)}")
         raise
 
 @app.on_event("shutdown")

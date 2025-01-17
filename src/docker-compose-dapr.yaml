@@ -1,0 +1,33 @@
+version: 1
+common:
+  resourcesPath: ./dapr/components/
+
+apps:
+  - appID: customer-service
+    appDirPath: "./src/Customer Service"
+    appPort: 8000
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    daprHTTPPort: 3510
+    env:
+      POSTGRES_USER: customer_service
+      POSTGRES_PASSWORD: customer_service_pass
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: customer_service
+
+  - appID: sales-service
+    appDirPath: "./src/Sales Service"
+    appPort: 8080
+    command: ["php", "-S", "0.0.0.0:80"]
+    daprHTTPPort: 3520
+    env:
+      DB_HOST: db
+      DB_NAME: sales
+      DB_USER: sales_user
+      DB_PASSWORD: sales_pass
+
+  - appID: report-service
+    appDirPath: "./src/Report Service"
+    appPort: 3000
+    command: ["npm", "start"]
+    daprHTTPPort: 3530
