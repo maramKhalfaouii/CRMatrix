@@ -4,7 +4,10 @@
         "open-telemetry/opentelemetry": "^1.0",
         "open-telemetry/exporter-zipkin": "^1.0",
         "guzzlehttp/promises": "^2.0",
-        "php-http/httplug": "^2.4"
+        "php-http/httplug": "^2.4",
+        "open-telemetry/api": "^1.2",
+        "jimdo/prometheus_client_php": "^0.9.1",
+        "guzzlehttp/guzzle": "^7.9"
     },
     "config": {
         "allow-plugins": {

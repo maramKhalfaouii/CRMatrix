@@ -4,7 +4,7 @@ common:
 
 apps:
   - appID: customer-service
-    appDirPath: "./src/Customer Service"
+    appDirPath: ./src/Customer Service
     appPort: 8000
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     daprHTTPPort: 3510
@@ -16,7 +16,7 @@ apps:
       POSTGRES_DB: customer_service
 
   - appID: sales-service
-    appDirPath: "./src/Sales Service"
+    appDirPath: ./src/Sales Service
     appPort: 8080
     command: ["php", "-S", "0.0.0.0:80"]
     daprHTTPPort: 3520
@@ -27,7 +27,7 @@ apps:
       DB_PASSWORD: sales_pass
 
   - appID: report-service
-    appDirPath: "./src/Report Service"
+    appDirPath: ./src/Report Service
     appPort: 3000
     command: ["npm", "start"]
     daprHTTPPort: 3530

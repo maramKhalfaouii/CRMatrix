@@ -11,6 +11,14 @@ spec:
     metadata:
       labels:
         app: customer-service
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "customer-service"
+        dapr.io/app-port: "8000"
+        dapr.io/enable-api-logging: "true"
+        dapr.io/config: "tracing"
+        dapr.io/log-level: "debug"
+        dapr.io/http-port: "3510"
     spec:
       containers:
       - name: customer-service
